@@ -1,0 +1,147 @@
+{% extends "layout-dev.html" %}
+{% load markdownify %}
+{% load mathfilters %}
+
+{% block head %}
+
+    <script src="https://mcapi.us/scripts/minecraft.js"></script>
+    <script>
+        entries = []
+
+        function init() {
+            obj = document.getElementById("popup").style.display = "none";
+        }
+
+        function setDescription(desc) {
+            document.getElementById("popup-description").innerHTML = desc;
+        }
+
+        function createNewElement(html) {
+            element = document.createElement("div");
+            element.innerHTML = html;
+            return element;
+        }
+
+        function createButton(name, desc) {
+            element = document.createElement("div");
+            element.innerHTML = "<button onclick='setDescription(\"" + desc + "\")')>⠀⠀⠀• " + name + "</button>";
+            return element;
+        }
+
+        function removeAllChildNodes(parent) {
+            while (parent.firstChild) {
+                parent.removeChild(parent.firstChild);
+            }
+        }
+
+        function openLink(link) {
+            window.open(link, "_blank");
+        }
+
+        function genServerStatus(server) {
+            MinecraftAPI.getServerStatus(server, {
+                port: 25565
+            }, function (err, status) {
+                if (err) {
+                    return "Error loading status";
+                }
+
+                if (status.online) {
+                    return status.players.now + "/" + status.players.max;
+                } else {
+                    return "Offline";
+                }
+            });
+        }
+
+        function parseServerDescription(description, server) {
+            console.log(genServerStatus(description))
+            console.log(server)
+            description.replace("%status%", genServerStatus(server))
+
+            return description;
+        }
+    </script>
+{% endblock %}
+
+{% block body %}
+
+    {% for type, entries in display.items %}
+        <section>
+            <header class="projects">
+                {{ type }}
+            </header>
+        </section>
+
+        <div id="features-holder-{{ type }}">
+
+        </div>
+
+        {% for entry in entries %}
+            <button id="entry-{{ type }}-{{ forloop.counter0 }}" onclick='
+                    removeAllChildNodes(document.getElementById("popup-subentry"));
+                    document.getElementById("popup-subentry").appendChild(createButton("Description","{{ entry.description | safe | linebreaksbr }}"));
+                    document.getElementById("popup-subentry").appendChild(document.createElement("br"));
+                    document.getElementById("popup").style.display = "block";
+                    document.getElementById("popup-image").src = "{{ entry.image }}";
+                    {% if entry.type == "server" %}
+                        document.getElementById("popup-description").innerHTML = parseServerDescription("{{ entry.description | safe | linebreaksbr }}", "{{ entry.name }}");
+                    {% else %}
+                        document.getElementById("popup-description").innerHTML = "{{ entry.description | safe | linebreaksbr }}";
+                    {% endif %}
+                    {% for subEntry in entry.subEntries.all %}
+                        {% if subEntry.url == "" %}
+                            document.getElementById("popup-subentry").appendChild(createButton("{{ subEntry.name }}","{{ subEntry.description | safe | linebreaksbr }}"));
+                        {% else %}
+                            element = document.createElement("button")
+                            element.setAttribute("onclick", "openLink(\"{{ subEntry.url }}\")")
+                            element.innerHTML="⠀⠀⠀• {{ subEntry.name }}"
+                            document.getElementById("popup-subentry").appendChild(element);
+                        {% endif %}
+                        document.getElementById("popup-subentry").appendChild(document.createElement("br"));
+                    {% endfor %}
+                    '>
+                <img src="{{ entry.image }}">
+                <figcaption>
+                    {{ entry.name }}
+                </figcaption>
+            </button>
+
+            {% if forloop.counter0|mod:3 == 0 %}
+                <script>
+                    element = document.createElement("section");
+                    element.className = "features";
+                    element.id = "feature-{{ type }}-{{ forloop.counter0|intdiv:3 }}";
+                    document.getElementById("features-holder-{{ type }}").appendChild(element);
+                    element = document.createElement("figure");
+                    document.getElementById("feature-{{ type }}-{{ forloop.counter0|add:1|intdiv:3 }}").appendChild(element)
+                    element.appendChild(document.getElementById("entry-{{ type }}-{{ forloop.counter0 }}"))
+                </script>
+            {% else %}
+                <script>
+                    element = document.createElement("figure");
+                    document.getElementById("feature-{{ type }}-{{ forloop.counter0|intdiv:3 }}").appendChild(element);
+                    element.appendChild(document.getElementById("entry-{{ type }}-{{ forloop.counter0 }}"))
+                </script>
+            {% endif %}
+
+        {% endfor %}
+    {% endfor %}
+
+
+    <div id="popup">
+        <img id="popup-image" src="">
+        <div id="popup-description">
+
+        </div>
+        <div id="popup-subentry">
+
+        </div>
+        <button id="closeButton" onclick='document.getElementById("popup").style.display = "none"'><img
+                src="https://lightdream.tk/static/images/root/x.png"></button>
+    </div>
+
+    <script>
+        init();
+    </script>
+{% endblock %}

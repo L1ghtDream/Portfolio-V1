@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block body %}
+    {% for key, values in display.items %}
+        <section>
+            <header class="projects">
+                {{ key }}
+            </header>
+        </section>
+        </div>
+
+        {% for batch in values %}
+            <section class="features">
+                {% for project in batch %}
+                    <figure>
+                        <a href="{{ project.url }}" target="_blank"><img src="{{ project.image }}"
+                                                                         alt="{{ project.name }}"></a>
+                        <figcaption>
+                            <a href="{{ project.url }}" target="_blank">{{ project.name }}</a>
+                        </figcaption>
+                    </figure>
+                {% endfor %}
+            </section>
+        {% endfor %}
+    {% endfor %}
+{% endblock %}
