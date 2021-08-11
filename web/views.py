@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render
 
 from web.models import Entry
@@ -202,3 +203,12 @@ def projectsViewDev(request):
             "Projects": projects,
         },
     })
+
+
+licences = {
+    "skywars": "43a3cd99-2945-4219-85c0-e88156133ebd"
+}
+
+
+def licence(request, plugin):
+    return HttpResponse(licences.get(plugin), content_type="text/plain")
