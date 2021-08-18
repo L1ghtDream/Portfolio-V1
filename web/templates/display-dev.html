@@ -23,8 +23,13 @@
         }
 
         function createButton(name, desc) {
-            element = document.createElement("div");
-            element.innerHTML = "<button onclick='setDescription(\"" + desc + "\")')>⠀⠀⠀• " + name + "</button>";
+            element = document.createElement("button")
+            element.setAttribute('onclick', 'setDescription("' + desc + '")');
+            element.innerHTML = "⠀⠀⠀• " + name;
+            //document.getElementById("popup-subentry").appendChild(element);
+
+            //element = document.createElement("div");
+            //element.innerHTML = "<button onclick='setDescription(\"" + desc + "\")')>⠀⠀⠀• " + name + "</button>";
             return element;
         }
 
@@ -39,26 +44,19 @@
         }
 
         function genServerStatus(server) {
-            MinecraftAPI.getServerStatus(server, {
-                port: 25565
-            }, function (err, status) {
-                if (err) {
-                    return "Error loading status";
-                }
-
-                if (status.online) {
-                    return status.players.now + "/" + status.players.max;
-                } else {
-                    return "Offline";
-                }
-            });
+            const url = 'https://api.mcsrvstat.us/2/' + server;
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", url, false); // false for synchronous request
+            xmlHttp.send(null);
+            if (JSON.parse(xmlHttp.responseText).online) {
+                return JSON.parse(xmlHttp.responseText).players.online + "/" + JSON.parse(xmlHttp.responseText).players.max;
+            } else {
+                return "Offline";
+            }
         }
 
         function parseServerDescription(description, server) {
-            console.log(genServerStatus(description))
-            console.log(server)
-            description.replace("%status%", genServerStatus(server))
-
+            description = description.replace("%status%", genServerStatus(server))
             return description;
         }
     </script>
@@ -80,12 +78,16 @@
         {% for entry in entries %}
             <button id="entry-{{ type }}-{{ forloop.counter0 }}" onclick='
                     removeAllChildNodes(document.getElementById("popup-subentry"));
-                    document.getElementById("popup-subentry").appendChild(createButton("Description","{{ entry.description | safe | linebreaksbr }}"));
+                    {% if entry.type == "server" %}
+                        document.getElementById("popup-subentry").appendChild(createButton("Description",parseServerDescription("{{ entry.description | safe | linebreaksbr }}","{{ entry.ip }}")));
+                    {% else %}
+                        document.getElementById("popup-subentry").appendChild(createButton("Description","{{ entry.description | safe | linebreaksbr }}"));
+                    {% endif %}
                     document.getElementById("popup-subentry").appendChild(document.createElement("br"));
                     document.getElementById("popup").style.display = "block";
                     document.getElementById("popup-image").src = "{{ entry.image }}";
                     {% if entry.type == "server" %}
-                        document.getElementById("popup-description").innerHTML = parseServerDescription("{{ entry.description | safe | linebreaksbr }}", "{{ entry.name }}");
+                        document.getElementById("popup-description").innerHTML = parseServerDescription("{{ entry.description | safe | linebreaksbr }}", "{{ entry.ip }}");
                     {% else %}
                         document.getElementById("popup-description").innerHTML = "{{ entry.description | safe | linebreaksbr }}";
                     {% endif %}
@@ -138,7 +140,7 @@
 
         </div>
         <button id="closeButton" onclick='document.getElementById("popup").style.display = "none"'><img
-                src="https://lightdream.tk/static/images/root/x.png"></button>
+                src="https://lightdream.dev/static/images/root/x.png"></button>
     </div>
 
     <script>

@@ -205,6 +205,20 @@ def projectsViewDev(request):
     })
 
 
+def degreesViewDev(request):
+    entries = list(Entry.objects.all())
+    degrees = []
+    for entry in entries:
+        if entry.type == "degree":
+            degrees.append(entry)
+
+    return render(request, "display-dev.html", {
+        "display": {
+            "Degrees": degrees,
+        },
+    })
+
+
 licences = {
     "skywars": "43a3cd99-2945-4219-85c0-e88156133ebd"
 }

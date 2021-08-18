@@ -7,6 +7,7 @@ class Entry(models.Model):
     name = models.CharField(max_length=10000)
     description = models.TextField()
     image = models.CharField(max_length=10000)
+    ip = models.CharField(max_length=10000, blank=True)
     #url = models.CharField(max_length=10000)
 
     def __str__(self):
