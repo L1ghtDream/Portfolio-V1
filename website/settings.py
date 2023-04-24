@@ -129,3 +129,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # HTTPS
+CSRF_TRUSTED_ORIGINS = ['https://*.voinearadu.com', 'https://*.lightdream.dev','https://*.127.0.0.1']
